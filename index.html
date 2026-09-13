@@ -4409,4 +4409,149 @@ bg11.addEventListener('pointerdown',e=>{
 })();
 
 </script>
+<script>
+/* ==== CEPAS UI v12 — wide landscape pro layout: 3 columns + fixed bottom nav ==== */
+(function(){
+const st12=document.createElement('style');
+st12.textContent=`
+#invWrap{display:flex !important;flex-direction:column !important;align-items:stretch !important;justify-content:flex-start !important;padding:2vh 2vw 2vh !important;gap:1.2vh;}
+#invPanel{position:relative;flex:1 1 auto;width:100% !important;aspect-ratio:auto !important;min-height:0;}
+#invTitle{top:.6% !important;height:8.5% !important;}
+#invClose{top:1%;right:.6%;width:3.6% !important;}
+#invTabs{position:static !important;flex:0 0 clamp(42px,10.5vh,64px) !important;width:100% !important;left:0 !important;bottom:0 !important;gap:2% !important;display:flex !important;}
+#invTabs button{flex:1;border-radius:6px;transition:transform .06s,filter .12s;}
+#invTabs button:active{transform:scale(.96) translateY(2px);filter:brightness(1.3);}
+#invBody{position:absolute !important;left:1.2% !important;top:10.5% !important;width:97.6% !important;height:88% !important;display:flex !important;gap:1.2%;}
+#tab_bag{display:flex !important;flex:0 0 27%;gap:3%;min-width:0;}
+#cpInvCol{flex:0 0 30%;display:flex;flex-direction:column;min-width:0;min-height:0;}
+#cpInvCol #cpBagWrap{flex:1;min-height:0;}
+#cpRightCol{flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;gap:1%;}
+#invBody.m12-bag #cpInvCol{flex-basis:35%;}
+#invBody.m12-bag #tab_bag{flex-basis:26%;}
+#invBody.m12-craft #cpRightCol,#invBody.m12-sk #cpRightCol{flex-basis:46%;}
+#tab_bag,#tab_craft,#tab_skills{height:100%;}
+#invBody #tab_craft{display:flex !important;}
+#invBody #tab_skills{display:none !important;}
+#invBody.m12-sk #tab_craft{display:none !important;}
+#invBody.m12-sk #tab_skills{display:flex !important;}
+#invBody.m12-sk #cpSearchWrap,#invBody.m12-sk #cpFilters{display:none !important;}
+#avatarCol{flex:1;aspect-ratio:auto !important;height:100%;min-width:0;}
+.cpGear{width:26% !important;}
+#cpSearchWrap{flex:none;position:relative;}
+#cpSearch{width:100% !important;position:static !important;padding:6px 8px 6px 26px !important;height:clamp(24px,4.6vh,34px) !important;background:#1c1006 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Crect x='1' y='1' width='8' height='8' fill='none' stroke='%23ffe27a' stroke-width='2'/%3E%3Crect x='8' y='8' width='5' height='3' fill='%23ffe27a'/%3E%3C/svg%3E") 6px center no-repeat !important;}
+#cpFilters{overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap !important;scrollbar-width:none;}
+#cpFilters::-webkit-scrollbar{display:none;}
+#cpFilters button{flex:0 0 auto !important;padding:4px 10px !important;}
+#bagGrid{grid-template-columns:repeat(5,1fr) !important;grid-auto-rows:minmax(0,1fr) !important;gap:1.5% !important;}
+@media (min-aspect-ratio:15/8){ #bagGrid{grid-template-columns:repeat(6,1fr) !important;} }
+.bslot,.aslot{transition:transform .06s;}
+.bslot:active,.aslot:active{transform:scale(.94);}
+.bslot.ping{animation:ping12 .35s ease-out;}
+@keyframes ping12{0%{box-shadow:0 0 0 2px #000,0 0 16px 4px #ffe27a;}100%{box-shadow:0 0 0 2px #000;}}
+.bslot[data-rar="1"]{box-shadow:0 0 0 2px #000,inset 0 0 0 2px #35e0ff;}
+.bslot[data-rar="2"]{box-shadow:0 0 0 2px #000,inset 0 0 0 2px #b04dff;}
+.craftRow{max-height:clamp(44px,9.5vh,64px) !important;padding:2px 4px !important;margin-bottom:4px !important;}
+.craftRow img{width:30px !important;height:30px !important;}
+.craftRow.cflash{animation:cfl12 .45s ease-out;}
+@keyframes cfl12{0%{filter:brightness(2.2);box-shadow:0 0 14px #ffe27a;}100%{filter:none;}}
+#cpHeroC5.bounce{animation:bnc12 .4s ease-out;}
+@keyframes bnc12{0%{transform:translateX(-50%) scale(1);}35%{transform:translateX(-50%) scale(1.06,.94);}70%{transform:translateX(-50%) scale(.97,1.04);}100%{transform:translateX(-50%) scale(1);}}
+#invWrap.open #invPanel{animation:sl12 .22s ease-out;}
+@keyframes sl12{0%{opacity:.4;transform:translateY(14px);}100%{opacity:1;transform:none;}}
+
+/* neutralize v8 dual-layout overrides */
+#invBody.l8-bag #tab_craft{display:flex !important;}
+#invBody.l8-bag #tab_bag,#invBody.l8-craft #tab_bag,#invBody.l8-sk #tab_bag{flex:0 0 27% !important;width:auto !important;}
+#invBody.l8-craft #tab_craft,#invBody.l8-sk #tab_skills{width:auto !important;flex:1 1 auto !important;}
+
+#craftList{flex:1;min-height:0;}
+#cpGrid,#cpRes,#cpRight{display:none !important;}
+`;
+document.head.appendChild(st12);
+/* ---- DOM restructure ---- */
+const wrap=document.getElementById('invWrap'), panel=document.getElementById('invPanel'),
+ body=document.getElementById('invBody'), tb=document.getElementById('tab_bag'),
+ bw=document.getElementById('cpBagWrap'), tabs=document.getElementById('invTabs'),
+ tc=document.getElementById('tab_craft'), ts=document.getElementById('tab_skills'),
+ search=document.getElementById('cpSearch'), filt=document.getElementById('cpFilters');
+wrap.appendChild(tabs);                       /* nav out of panel -> fixed bottom band */
+const invC=document.createElement('div'); invC.id='cpInvCol';
+body.insertBefore(invC, tb.nextSibling); invC.appendChild(bw);
+const rc=document.createElement('div'); rc.id='cpRightCol';
+body.appendChild(rc);
+const sw=document.createElement('div'); sw.id='cpSearchWrap';
+if(search){ sw.appendChild(search); rc.appendChild(sw); }
+if(filt){ rc.appendChild(filt); }
+rc.appendChild(tc); rc.appendChild(ts);
+/* weapon slot (reserved for combat update) */
+const gl=document.getElementById('cpGearL');
+if(gl&&!document.getElementById('arm_weapon')){
+  const w=document.createElement('div'); w.className='aslot'; w.id='arm_weapon';
+  w.innerHTML='<span class="t">WPN</span>';
+  w.addEventListener('pointerdown',e=>{ e.preventDefault(); showToast('Weapons arrive with the Combat update!'); });
+  gl.appendChild(w);
+}
+/* ---- tab emphasis + m12 classes ---- */
+function m12set(){
+  body.classList.remove('m12-bag','m12-craft','m12-sk');
+  body.classList.add(invTab==='craft'?'m12-craft':(invTab==='skills'?'m12-sk':'m12-bag'));
+}
+tabs.addEventListener('click',()=>setTimeout(m12set,6),true);
+const _ti12=toggleInv; toggleInv=function(f){ _ti12(f); setTimeout(m12set,6); };
+setTimeout(m12set,450);
+/* ---- 8 category filters ---- */
+if(filt){
+  filt.innerHTML='';
+  const CATS12=[['ALL','all'],['GEAR','gear'],['WEAPONS','wpn'],['ARMOR','armor'],['TOOLS','tools'],['FOOD','food'],['MATERIALS','mat'],['QUEST','quest']];
+  let F12='all';
+  window.__grp12=function(id){ const c=catOf(id);
+    if(c==='ARMOR') return 'armor'; if(c==='PACKS') return 'gear';
+    if(c==='FOOD'||c==='DRINKS') return 'food';
+    if(id==='torch') return 'tools';
+    if(c==='QUEST') return 'quest';
+    return 'mat'; };
+  function grpOf(id){ const g=__grp12(id);
+    if(F12==='gear') return (g==='armor'||g==='gear');
+    return g===F12; }
+  window.__apply12=function(){
+    const bg2=document.getElementById('bagGrid'); if(!bg2) return;
+    bg2.querySelectorAll('.bslot').forEach(d=>{
+      const img=d.querySelector('img[data-id]');
+      if(img){ const id=img.dataset.id;
+        d.dataset.rar=(/copper/.test(id))?'1':(/iron|gold/.test(id))?'2':'';
+      } else d.dataset.rar='';
+      d.style.display=(!img||F12==='all'||grpOf(img.dataset.id))?'':'none';
+    });
+  };
+  CATS12.forEach(p=>{
+    const b=document.createElement('button'); b.textContent=p[0];
+    if(p[1]==='all') b.className='on';
+    b.addEventListener('click',()=>{ F12=p[1];
+      filt.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+      __apply12(); });
+    filt.appendChild(b);
+  });
+  const _ri12=renderInv; renderInv=function(){ _ri12(); __apply12(); };
+  setTimeout(__apply12,500);
+}
+/* ---- micro-animations ---- */
+document.getElementById('bagGrid').addEventListener('pointerdown',e=>{
+  const c=e.target.closest('.bslot'); if(!c) return;
+  c.classList.remove('ping'); void c.offsetWidth; c.classList.add('ping');
+},true);
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.craftRow .btn'); if(!b) return;
+  const r=b.closest('.craftRow'); r.classList.remove('cflash'); void r.offsetWidth; r.classList.add('cflash');
+},true);
+let ARM12='';
+const _ri12b=renderInv;
+renderInv=function(){ const before=JSON.stringify(ARMOR); _ri12b();
+  const now=JSON.stringify(ARMOR);
+  if(before!==now){ const c=document.getElementById('cpHeroC5'); if(c){ c.classList.remove('bounce'); void c.offsetWidth; c.classList.add('bounce'); } } };
+})();
+
+/* pointercancel: clean drag ghost */
+document.addEventListener('pointercancel',()=>{ const g=document.getElementById('cpGhost'); if(g) g.remove(); },{passive:true});
+
+</script>
 </html>
