@@ -3902,7 +3902,7 @@ for (const id in ITEMS){ const e=ITEMS[id]; if (e && e.slot && e.slot!=='pack' &
   if(av) av.addEventListener('pointerdown',e=>{e.preventDefault();clickArmor('hands');});
 })();
 /* ---------- LIVE HERO PAPER-DOLL ---------- */
-const WORN={head:[1,0,14,7],body:[1,6,14,7],hands:[10,9,6,5],legs:[2,12,12,4],feet:[2,14,12,3]};
+const WORN={head:[3,0,10,6],body:[3,6,10,6],hands:[11,9,4,4],legs:[4,12,8,3],feet:[4,15,8,2]};
 const wornImgs={};
 function wornImg(id){ if(!id) return null; let im=wornImgs[id]; if(!im){ im=new Image(); im.src=itemIcon(id); wornImgs[id]=im; } return im.complete?im:null; }
 function drawWorn(g,hx,hy,hw,hh){
@@ -3929,7 +3929,7 @@ const _dp4=drawPlayer;
 drawPlayer=function(){ _dp4();
   if(!(ARMOR.head||ARMOR.body||ARMOR.legs||ARMOR.feet||ARMOR.hands)) return;
   const x=player.x-camX, y=player.y-camY;
-  const hw=30, hh=56, hx=x-hw/2, hy=y-hh+2;
+  const hw=26, hh=56, hx=x-hw/2, hy=y-hh+2;
   drawWorn(ctx,hx,hy,hw,hh);
 };
 /* ---------- 3x3 CRAFTING GRID ---------- */
@@ -3988,6 +3988,36 @@ document.getElementById('invTabs').addEventListener('click',()=>setTimeout(force
 const _ti4=toggleInv;
 toggleInv=function(f){ _ti4(f); setTimeout(forceDual,0); };
 setTimeout(forceDual,300);
+})();
+
+</script>
+<script>
+/* ==== CEPAS UI v5 — layout/icon/overlay fixes ==== */
+(function(){
+const st5=document.createElement('style');
+st5.textContent=`
+#invBody{display:flex !important;gap:2% !important;}
+#tab_bag{width:47% !important;flex:none !important;}
+#tab_craft{width:51% !important;flex:none !important;}
+#tab_skills{width:100% !important;}
+#tab_craft #craftSide{display:none !important;}
+.cpChip{background:#5a3a1e !important;border:2px solid #c9a35f !important;box-shadow:0 0 0 2px #000,inset 0 2px 0 rgba(255,255,255,.15) !important;color:#ffe27a !important;text-shadow:1px 1px 0 #000 !important;}
+.cpChip.on{background:#0e3a44 !important;border-color:#35e0ff !important;color:#7fe8ff !important;box-shadow:0 0 0 2px #000,0 0 10px #35e0ff88 !important;}
+#cpSort{background:#5a3a1e !important;color:#ffe27a !important;}
+#cpBar{background:rgba(20,12,8,.85) !important;border:2px solid #c9a35f !important;box-shadow:0 0 0 2px #000 !important;}
+#cpSearch{margin:0 0 6px !important;}
+#cpVTabs{max-width:60px;}
+`;
+document.head.appendChild(st5);
+/* recolor base gear icons with sheet art (fixes white palette glitch) */
+(function(){
+  const find=re=>{ for(const id in ITEMS){ if(re.test(ITEMS[id].name)) return id; } return null; };
+  const map={ cap:/Basic Helmet/i, vest:/Basic Armor/i, pants:/Basic (Leggings|Greaves|Pants)/i, boots:/Basic Boots/i, bag:/Basic Backpack/i };
+  for(const b in map){ const f=find(map[b]); if(f&&INV_ICONS[f]) INV_ICONS[b]=INV_ICONS[f]; }
+  const med=find(/^Bandage$/i); /* keep */
+})();
+/* re-render if inventory open */
+if (typeof renderInv==='function' && invOpen) { renderInv(); if (typeof renderCraftUI==='function') renderCraftUI(); }
 })();
 
 </script>
