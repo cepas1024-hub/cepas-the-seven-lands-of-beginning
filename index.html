@@ -4163,4 +4163,94 @@ function wim8(id){ if(!id) return null; let im=wi8[id]; if(!im){ im=new Image();
 })();
 
 </script>
+<script>
+/* ==== CEPAS UI v9 — royal navy overhaul (ref: navy+gold+blue RPG panels) ==== */
+(function(){
+const st9=document.createElement('style');
+st9.textContent=`
+#invWrap{background:rgba(4,8,18,.62) !important;}
+#invPanel{background:linear-gradient(180deg,#101f3a,#0a1424 55%,#0d1a30) !important;border:3px solid #d8a94e !important;border-radius:8px;box-shadow:0 0 0 3px #05070d,0 0 0 5px #6b4c1c,0 0 24px rgba(46,168,255,.28),inset 0 0 46px rgba(0,0,0,.65) !important;}
+#invPanel .art{display:none !important;}
+#invTitle{color:#fff !important;text-shadow:0 2px 0 #000,0 0 8px #2ea8ff88 !important;background:linear-gradient(#1c2f52,#12203a) !important;border:2px solid #d8a94e !important;box-shadow:0 0 0 2px #000 !important;border-radius:5px;letter-spacing:2px;}
+#invClose{background:#16233c !important;color:#ffd9a0 !important;border-color:#d8a94e !important;}
+#invTabs{top:auto !important;bottom:2.5% !important;left:5% !important;width:90% !important;gap:1.5% !important;}
+#invTabs button{background:linear-gradient(#182a4a,#101c33) !important;color:#cfe1ff !important;border:2px solid #35507e !important;box-shadow:0 0 0 2px #000 !important;border-radius:5px;}
+#invTabs button.on{background:linear-gradient(#3f8df0,#1e5cb0) !important;color:#fff !important;border-color:#9cc7ff !important;box-shadow:0 0 0 2px #000,0 0 12px rgba(64,145,255,.6) !important;}
+#invBody{top:16% !important;height:69% !important;}
+.aslot,.bslot{background:#0d1830 !important;border-color:#b98c3f !important;}
+.bslot.locked{background:#080d18 !important;border-color:#22304a !important;}
+.aslot .t{color:#ffd93d !important;}
+#armorCol{display:none !important;}
+.cpGear{width:15%;flex:none;display:grid;grid-template-rows:repeat(3,1fr);gap:4%;min-height:0;}
+.cpGear .aslot{position:relative !important;width:auto !important;aspect-ratio:auto !important;height:auto !important;}
+#bagGrid{border:2px solid #22304a;background:#0a1220cc;box-shadow:inset 0 0 12px #000;padding:1%;}
+#cpFilters{display:flex;gap:2%;margin-bottom:2%;flex:none;}
+#cpFilters button{flex:1;background:linear-gradient(#182a4a,#101c33);color:#cfe1ff;border:2px solid #35507e;box-shadow:0 0 0 2px #000;font-family:inherit;font-weight:bold;font-size:clamp(8px,1.8vh,12px);padding:3px 0;border-radius:4px;cursor:pointer;}
+#cpFilters button.on{background:linear-gradient(#3f8df0,#1e5cb0);color:#fff;border-color:#9cc7ff;}
+.craftRow,.skRow{background:#0d1830 !important;border-color:#35507e !important;}
+.craftRow b,.skRow b{color:#fff !important;}
+.craftRow span,.skRow span{color:#9fb4d8 !important;}
+.btn.small,#cpTake,#cpSort{background:linear-gradient(#3f8df0,#1e5cb0) !important;color:#fff !important;border:2px solid #9cc7ff !important;box-shadow:0 0 0 2px #000 !important;text-shadow:1px 1px 0 #000;}
+.cpChip{background:linear-gradient(#182a4a,#101c33) !important;color:#cfe1ff !important;border:2px solid #35507e !important;box-shadow:0 0 0 2px #000 !important;}
+.cpChip.on{background:linear-gradient(#3f8df0,#1e5cb0) !important;color:#fff !important;border-color:#9cc7ff !important;box-shadow:0 0 0 2px #000,0 0 10px #4091ff99 !important;}
+#cpSearch{background:#0d1830 !important;border:2px solid #35507e !important;color:#dfe9ff !important;}
+#cpSearch::placeholder{color:#6d84ad;}
+#skPts{color:#ffd93d !important;}
+#bagGrid::-webkit-scrollbar-thumb,#craftList::-webkit-scrollbar-thumb,#skList::-webkit-scrollbar-thumb{background:#3f8df0 !important;border:2px solid #000 !important;}
+#bagGrid,#craftList,#skList{scrollbar-color:#3f8df0 #0a1220 !important;}
+#quickbar .slot{background:#0d1830 !important;border:3px solid #b98c3f !important;box-shadow:0 0 0 2px #000,inset 0 2px 0 rgba(255,255,255,.08) !important;}
+#quickbar .slot.sel{background:#1e5cb0 !important;border-color:#9cc7ff !important;box-shadow:0 0 0 2px #000,0 0 10px rgba(64,145,255,.6) !important;}
+#pTray .art{display:none !important;}
+#pTray{background:linear-gradient(#16264a,#0c1830) !important;border:2px solid #d8a94e !important;box-shadow:0 0 0 2px #000,0 0 14px rgba(46,168,255,.3) !important;border-radius:6px;}
+#cpFoodBar{background:#0d1830 !important;border-color:#d8a94e !important;}
+#setPanel{background:linear-gradient(180deg,#101f3a,#0a1424 55%,#0d1a30) !important;border:3px solid #d8a94e !important;border-radius:8px;box-shadow:0 0 0 3px #05070d,0 0 0 5px #6b4c1c,0 0 24px rgba(46,168,255,.28) !important;}
+#setPanel .art{display:none !important;}
+#setTitle{color:#fff !important;background:linear-gradient(#1c2f52,#12203a) !important;border:2px solid #d8a94e !important;box-shadow:0 0 0 2px #000 !important;border-radius:5px;}
+#setClose{background:#16233c !important;border-color:#d8a94e !important;}
+.setRow .lab{color:#cfe1ff !important;}
+#avatarCol{filter:drop-shadow(0 0 10px rgba(46,168,255,.25));}
+`;
+document.head.appendChild(st9);
+/* tab icons */
+const IC9={bag:'🎒',craft:'🔨',skills:'⭐'};
+document.querySelectorAll('#invTabs button').forEach(b=>{ const t=b.dataset.tab; b.textContent=''; const s=document.createElement('span'); s.textContent=IC9[t]+' '+t.toUpperCase(); b.appendChild(s); });
+/* gear columns flanking the doll */
+const ac=document.getElementById('armorCol'), av=document.getElementById('avatarCol'), tb=document.getElementById('tab_bag');
+if(ac&&av&&tb){
+  const L=document.createElement('div'); L.id='cpGearL'; L.className='cpGear';
+  const R=document.createElement('div'); R.id='cpGearR'; R.className='cpGear';
+  ['arm_head','arm_body','arm_legs'].forEach(id=>{ const e=document.getElementById(id); if(e) L.appendChild(e); });
+  ['arm_hands','arm_feet','arm_pack'].forEach(id=>{ const e=document.getElementById(id); if(e) R.appendChild(e); });
+  tb.insertBefore(L,av); tb.insertBefore(R,av.nextSibling);
+}
+/* bag grid wrapper + filter chips */
+const bg=document.getElementById('bagGrid');
+if(bg&&tb){
+  const W=document.createElement('div'); W.id='cpBagWrap';
+  W.style.cssText='flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;';
+  tb.insertBefore(W,bg); W.appendChild(bg);
+  const F=document.createElement('div'); F.id='cpFilters';
+  [['ALL','all'],['GEAR','gear'],['FOOD','food'],['MATS','mats']].forEach(p=>{
+    const b=document.createElement('button'); b.textContent=p[0]; b.dataset.f=p[1];
+    if(p[1]==='all') b.className='on';
+    b.addEventListener('click',()=>{ F9=p[1]; F.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); applyF9(); });
+    F.appendChild(b);
+  });
+  W.insertBefore(F,bg);
+}
+let F9='all';
+function grp9(id){ const c=catOf(id); if(c==='ARMOR'||c==='PACKS') return 'gear'; if(c==='FOOD'||c==='DRINKS') return 'food'; return 'mats'; }
+function applyF9(){
+  const bg2=document.getElementById('bagGrid'); if(!bg2) return;
+  bg2.querySelectorAll('.bslot').forEach(d=>{
+    const img=d.querySelector('img[data-id]');
+    d.style.display=(!img||F9==='all'||grp9(img.dataset.id)===F9)?'':'none';
+  });
+}
+const _ri9=renderInv;
+renderInv=function(){ _ri9(); applyF9(); };
+setTimeout(applyF9,500);
+})();
+
+</script>
 </html>
