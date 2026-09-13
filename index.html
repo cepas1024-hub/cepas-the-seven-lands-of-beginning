@@ -4629,4 +4629,34 @@ if(filt){
 })();
 
 </script>
+<script>
+/* ==== CEPAS UI v15 — solid slots, scroll chain, one-line rows, SORT first ==== */
+(function(){
+const st15=document.createElement('style');
+st15.textContent=`
+.aslot,.bslot{background:#2a1a0c !important;border:3px solid #c9a35f !important;box-shadow:0 0 0 2px #000,inset 0 0 10px rgba(0,0,0,.8),inset 0 2px 0 rgba(255,255,255,.08) !important;border-radius:4px;}
+.bslot.locked{background:#170e06 !important;border-color:#4a3418 !important;}
+#cpRightCol{overflow:hidden !important;min-height:0 !important;}
+#cpSearchWrap{flex:none !important;}
+#cpFilters{flex:none !important;}
+#tab_craft{flex:1 1 auto !important;height:auto !important;min-height:0 !important;display:flex !important;overflow:hidden !important;}
+#cpRight{flex:1 1 auto !important;min-height:0 !important;}
+#craftList{flex:1 1 auto !important;min-height:0 !important;max-height:none !important;overflow-y:auto !important;}
+.craftRow .cpSlot{width:24px !important;height:24px !important;flex:none !important;}
+.craftRow .cpSlot img{width:100% !important;height:100% !important;}
+.craftRow{flex-wrap:nowrap !important;gap:5px !important;}
+.craftRow .cn{min-width:0 !important;flex:1 !important;}
+.craftRow .cn b{white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;display:block !important;}
+.craftRow .cn>span{white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;display:block !important;}
+.cpHead{font-size:7px !important;margin:2px 0 !important;}
+#tab_skills{min-height:0 !important;overflow:hidden !important;}
+#skRight{min-height:0 !important;}
+#skList{flex:1 1 auto !important;min-height:0 !important;overflow-y:auto !important;}
+`;
+document.head.appendChild(st15);
+const filt=document.getElementById('cpFilters'), so=document.getElementById('cpSort');
+if(filt&&so) filt.insertBefore(so,filt.firstChild);
+})();
+
+</script>
 </html>
