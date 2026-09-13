@@ -4090,4 +4090,77 @@ function wim(id){ if(!id) return null; let im=wi7[id]; if(!im){ im=new Image(); 
 })();
 
 </script>
+<script>
+/* ==== CEPAS UI v8 — eat restored, dual ONLY in craft, true-ratio paper-doll ==== */
+(function(){
+const st8=document.createElement('style');
+st8.textContent=`
+#cpHeroC3{display:none !important;}
+#cpHeroC4{position:absolute;left:50%;top:2px;transform:translateX(-50%);height:calc(100% - 4px);width:auto;image-rendering:pixelated;pointer-events:none;z-index:1;}
+#invBody.l8-bag #tab_bag{width:100% !important;flex:none !important;display:flex !important;}
+#invBody.l8-bag #tab_craft,#invBody.l8-bag #tab_skills{display:none !important;}
+#invBody.l8-craft #tab_bag{width:47% !important;flex:none !important;display:flex !important;}
+#invBody.l8-craft #tab_craft{width:51% !important;flex:none !important;display:flex !important;}
+#invBody.l8-craft #tab_skills{display:none !important;}
+#invBody.l8-sk #tab_skills{width:100% !important;flex:none !important;display:flex !important;}
+#invBody.l8-sk #tab_bag,#invBody.l8-sk #tab_craft{display:none !important;}
+#cpFoodBar{position:fixed;top:10px;left:50%;transform:translateX(-50%);width:min(46vw,230px);height:16px;background:#241408;border:3px solid #c9a35f;box-shadow:0 0 0 2px #000,inset 0 2px 4px #000;z-index:60;}
+#cpFoodFill{height:100%;width:100%;background:linear-gradient(#ffd07a,#ff9a2e 45%,#c96a10);box-shadow:inset 0 -3px 0 rgba(0,0,0,.35);transition:width .4s;}
+#cpFoodLbl{position:absolute;left:6px;top:0;font:bold 9px monospace;color:#3a1c05;letter-spacing:1px;line-height:11px;text-shadow:0 1px 0 rgba(255,255,255,.25);}
+`;
+document.head.appendChild(st8);
+/* ---------- FOOD / EAT ---------- */
+function eatVal8(id){ const c=catOf(id); const tag=(ITEMS[id].desc||'');
+  if(c==='DRINKS') return 14;
+  if(c==='FOOD'){ if(/Meal/.test(tag)) return 34; if(/Cooked/.test(tag)) return 26; return 16; }
+  return 0; }
+let FOOD8=100;
+try{ FOOD8=parseFloat(localStorage.getItem('aethelgard_food8')||'100'); }catch(_){}
+const fb=document.createElement('div'); fb.id='cpFoodBar';
+fb.innerHTML='<div id="cpFoodFill"></div><span id="cpFoodLbl">FOOD</span>';
+document.body.appendChild(fb);
+function applyFood8(){ const f=document.getElementById('cpFoodFill'); if(f) f.style.width=Math.max(0,Math.min(100,FOOD8))+'%'; try{ localStorage.setItem('aethelgard_food8',String(FOOD8)); }catch(_){} }
+applyFood8();
+setInterval(()=>{ if(!document.hidden){ FOOD8=Math.max(0,FOOD8-0.5); applyFood8(); } },20000);
+function eat8(id){ const v=eatVal8(id); if(!v) return false;
+  if(countMat(id)<1) return false;
+  useMat(id,1); FOOD8=Math.min(100,FOOD8+v); applyFood8(); renderInv();
+  showToast((catOf(id)==='DRINKS'?'Drank ':'Ate ')+ITEMS[id].name+' (+'+v+' food)');
+  return true; }
+const _cb8=clickBag;
+clickBag=function(i){ const st=bagArr[i]; if(st&&invOpen&&eatVal8(st.id)){ eat8(st.id); return; } _cb8(i); };
+/* ---------- DUAL PANEL ONLY IN CRAFT ---------- */
+function lay8(){
+  const ib=document.getElementById('invBody'); if(!ib) return;
+  ib.classList.remove('l8-bag','l8-craft','l8-sk');
+  ib.classList.add(invTab==='craft'?'l8-craft':(invTab==='skills'?'l8-sk':'l8-bag'));
+}
+document.getElementById('invTabs').addEventListener('click',()=>setTimeout(lay8,5),true);
+const _ti8=toggleInv;
+toggleInv=function(f){ _ti8(f); setTimeout(lay8,5); };
+setTimeout(lay8,400);
+/* ---------- TRUE-RATIO ANIMATED PAPER-DOLL ---------- */
+const W8={head:[7,2,18,14],body:[7,16,18,16],hands:[24,22,6,8],legs:[9,40,14,14],feet:[9,54,14,10]};
+const wi8={};
+function wim8(id){ if(!id) return null; let im=wi8[id]; if(!im){ im=new Image(); im.src=itemIcon(id); wi8[id]=im; } return im.complete?im:null; }
+(function(){
+  const avc=document.getElementById('avatarCol'); if(!avc) return;
+  const c=document.createElement('canvas'); c.id='cpHeroC4'; c.width=96; c.height=198; avc.appendChild(c);
+  const g=c.getContext('2d');
+  setInterval(()=>{
+    g.clearRect(0,0,96,198);
+    const hi=HERO.img&&HERO.img['down/idle'];
+    if(!(hi&&hi.complete&&hi.naturalWidth)) return;
+    const fr=Math.floor(Date.now()/83)%30;
+    const sx=(fr%16)*32, sy=((fr/16)|0)*66;
+    g.drawImage(hi,sx,sy,32,66,0,0,96,198);
+    ['feet','legs','body','hands','head'].forEach(k=>{
+      const st=ARMOR[k]; if(!st) return; const im=wim8(st.id); if(!im) return; const r=W8[k];
+      g.drawImage(im,r[0]*3,r[1]*3,r[2]*3,r[3]*3);
+    });
+  },66);
+})();
+})();
+
+</script>
 </html>
