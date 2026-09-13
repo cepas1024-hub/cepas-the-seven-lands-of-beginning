@@ -3791,57 +3791,7 @@ renderInv=function(){ _ri3();
     tb.insertBefore(b,tb.firstChild); }
   bagCells.forEach((d,i)=>{ const s3=bagArr[i]; const img=d.querySelector('img'); if(img&&s3) img.dataset.id=s3.id; });
 };
-/* --- QUICKBAR HUD --- */
-let cpQuick=[], cpSel=0;
-try{ cpQuick=JSON.parse(localStorage.getItem('aethelgard_quick3')||'[]'); }catch(_){}
-while(cpQuick.length<6) cpQuick.push(null);
-try{ cpSel=parseInt(localStorage.getItem('aethelgard_qsel3')||'0',10)||0; }catch(_){}
-function saveQ(){ try{ localStorage.setItem('aethelgard_quick3',JSON.stringify(cpQuick)); localStorage.setItem('aethelgard_qsel3',String(cpSel)); }catch(_){} }
-const bar=document.createElement('div'); bar.id='cpBar'; document.body.appendChild(bar);
-function renderBar(){
-  bar.innerHTML='';
-  cpQuick.forEach((id,i)=>{
-    const q=document.createElement('span'); q.className='q'+(i===cpSel?' on':'');
-    if(id&&ITEMS[id]) q.innerHTML='<img alt="" data-id="'+id+'" src="'+itemIcon(id)+'">';
-    q.addEventListener('click',()=>{ cpSel=i; saveQ(); renderBar(); if(cpQuick[i]) showToast('Selected: '+ITEMS[cpQuick[i]].name); });
-    let lp=null;
-    q.addEventListener('pointerdown',()=>{ lp=setTimeout(()=>{ cpQuick[i]=null; saveQ(); renderBar(); showToast('Quick slot cleared'); lp=null; },600); });
-    q.addEventListener('pointerup',()=>{ if(lp){clearTimeout(lp);} });
-    bar.appendChild(q);
-  });
-  const u=document.createElement('button'); u.id='cpUse'; u.className='cpChip'; u.textContent='USE';
-  u.addEventListener('click',quickUse);
-  bar.appendChild(u);
-}
-function eatVal(id){ const c=catOf(id); const tag=(ITEMS[id].desc||'');
-  if(c==='DRINKS') return 14;
-  if(c==='FOOD'){ if(/Meal/.test(tag)) return 34; if(/Cooked/.test(tag)) return 26; return 16; }
-  return 0; }
-let CP_FOOD=100;
-try{ CP_FOOD=parseFloat(localStorage.getItem('aethelgard_food3')||'100'); }catch(_){}
-function applyFood(){ const f=document.getElementById('foodFill'); if(f) f.style.width=Math.max(0,Math.min(100,CP_FOOD))+'%'; try{localStorage.setItem('aethelgard_food3',String(CP_FOOD));}catch(_){} }
-setInterval(()=>{ if(!document.hidden){ CP_FOOD=Math.max(0,CP_FOOD-0.5); applyFood(); } },20000);
-applyFood();
-function quickUse(){
-  const id=cpQuick[cpSel];
-  if(!id){ showToast('Quick slot empty — hold an item in BAG to assign.'); return; }
-  const v=eatVal(id);
-  if(!v){ showToast(ITEMS[id].name+': no quick use yet.'); return; }
-  if(countMat(id)<1){ showToast('No '+ITEMS[id].name+' in bag!'); return; }
-  useMat(id,1); CP_FOOD=Math.min(100,CP_FOOD+v); applyFood(); renderInv();
-  showToast((catOf(id)==='DRINKS'?'Drank ':'Ate ')+ITEMS[id].name+' (+'+v+' food)');
-}
-/* hold bag item -> assign to selected quick slot */
-let holdT=null;
-document.addEventListener('pointerdown',e=>{
-  const img=e.target&&e.target.closest?e.target.closest('.bslot img[data-id]'):null;
-  if(!img) return;
-  holdT=setTimeout(()=>{ cpQuick[cpSel]=img.dataset.id; saveQ(); renderBar(); showToast(ITEMS[img.dataset.id].name+' -> quick slot '+(cpSel+1)); holdT=null; },550);
-},{passive:true});
-document.addEventListener('pointerup',()=>{ if(holdT) clearTimeout(holdT); },{passive:true});
-const _ti3=toggleInv;
-toggleInv=function(){ _ti3(); const open=document.getElementById('invWrap').style.display!=='none'; bar.style.display=open?'none':'flex'; };
-renderBar();
+/* quickbar removed (v7 rebuild) */
 /* --- tooltip (kept) --- */
 const tip=document.createElement('div'); tip.id='cpTip'; document.body.appendChild(tip);
 let tipT=0;
@@ -3925,13 +3875,7 @@ function drawWorn(g,hx,hy,hw,hh){
   },140);
 })();
 /* gameplay worn armor */
-const _dp4=drawPlayer;
-drawPlayer=function(){ _dp4();
-  if(!(ARMOR.head||ARMOR.body||ARMOR.legs||ARMOR.feet||ARMOR.hands)) return;
-  const x=player.x-camX, y=player.y-camY;
-  const hw=26, hh=56, hx=x-hw/2, hy=y-hh+2;
-  drawWorn(ctx,hx,hy,hw,hh);
-};
+/* gameplay overlay removed (v7) */
 /* ---------- 3x3 CRAFTING GRID ---------- */
 let cpGrid=new Array(9).fill(null);
 (function(){
@@ -4070,6 +4014,79 @@ function drawWorn2(g,hx,hy,hw,hh){
   },140);
 })();
 if (invOpen){ renderInv(); }
+})();
+
+</script>
+<script>
+/* ==== CEPAS UI v7 — native-style quickbar, roomy UI, animated paper-doll ==== */
+(function(){
+const st7=document.createElement('style');
+st7.textContent=`
+#invPanel{aspect-ratio:640/400 !important;}
+#invBody{top:24% !important;height:68% !important;}
+#tab_bag{width:50% !important;}
+#tab_craft{width:50% !important;}
+#cpBar{display:none !important;}
+#quickbar .slot{background:#5f412a !important;border:3px solid #c9a35f !important;box-shadow:0 0 0 2px #000,inset 0 2px 0 rgba(255,255,255,.12) !important;}
+#quickbar .slot.sel{background:#8a6238 !important;border-color:#ffe27a !important;box-shadow:0 0 0 2px #000,0 0 10px rgba(255,226,122,.55) !important;}
+#cpHeroC2{display:none !important;}
+#cpHeroC3{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none;z-index:1;}
+`;
+document.head.appendChild(st7);
+/* ---------- QUICKBAR v7 (native tray, HUD-matched, select-only) ---------- */
+let q7=[], s7=0;
+try{ q7=JSON.parse(localStorage.getItem('aethelgard_quick7')||'[]'); }catch(_){}
+while(q7.length<6) q7.push(null);
+try{ s7=parseInt(localStorage.getItem('aethelgard_qsel7')||'0',10)||0; }catch(_){}
+function save7(){ try{ localStorage.setItem('aethelgard_quick7',JSON.stringify(q7)); localStorage.setItem('aethelgard_qsel7',String(s7)); }catch(_){} }
+const hb=document.getElementById('quickbar');
+hb.innerHTML='';
+function render7(){
+  hb.innerHTML='';
+  q7.forEach((id,i)=>{
+    const d=document.createElement('div');
+    d.className='slot'+(i===s7?' sel':'');
+    d.style.left=(1.2+i*16.5)+'%'; d.style.top='6%'; d.style.width='15.3%'; d.style.height='88%';
+    d.innerHTML = id&&ITEMS[id] ? '<img alt="" data-id="'+id+'" src="'+itemIcon(id)+'">' : '';
+    d.addEventListener('pointerdown',e=>{ e.preventDefault(); s7=i; save7(); render7(); });
+    let lp=null;
+    d.addEventListener('pointerdown',()=>{ lp=setTimeout(()=>{ q7[i]=null; save7(); render7(); showToast('Slot cleared'); lp=null; },600); });
+    d.addEventListener('pointerup',()=>{ if(lp) clearTimeout(lp); });
+    hb.appendChild(d);
+  });
+}
+render7();
+/* hold bag item -> assign */
+let h7=null;
+document.addEventListener('pointerdown',e=>{
+  const img=e.target&&e.target.closest?e.target.closest('.bslot img[data-id]'):null;
+  if(!img) return;
+  h7=setTimeout(()=>{ q7[s7]=img.dataset.id; save7(); render7(); showToast(ITEMS[img.dataset.id].name+' -> slot '+(s7+1)); h7=null; },550);
+},{passive:true});
+document.addEventListener('pointerup',()=>{ if(h7) clearTimeout(h7); },{passive:true});
+/* ---------- ANIMATED PAPER-DOLL (real hero idle + worn armor) ---------- */
+const W7={head:[7,2,18,14],body:[7,16,18,16],hands:[24,22,6,8],legs:[9,40,14,14],feet:[9,54,14,10]};
+const wi7={};
+function wim(id){ if(!id) return null; let im=wi7[id]; if(!im){ im=new Image(); im.src=itemIcon(id); wi7[id]=im; } return im.complete?im:null; }
+(function(){
+  const avc=document.getElementById('avatarCol'); if(!avc) return;
+  const c=document.createElement('canvas'); c.id='cpHeroC3'; c.width=96; c.height=110; avc.appendChild(c);
+  const g=c.getContext('2d');
+  setInterval(()=>{
+    g.clearRect(0,0,96,110);
+    const hi=HERO.img&&HERO.img['down/idle'];
+    if(!(hi&&hi.complete&&hi.naturalWidth)) return;
+    const fr=Math.floor(Date.now()/83)%30;
+    const sx=(fr%16)*32, sy=((fr/16)|0)*66;
+    const hw=88, hh=hw*66/32;
+    const hx=(96-hw)/2, hy=109-hh;
+    g.drawImage(hi,sx,sy,32,66,hx,hy,hw,hh);
+    ['feet','legs','body','hands','head'].forEach(k=>{
+      const st=ARMOR[k]; if(!st) return; const im=wim(st.id); if(!im) return; const r=W7[k];
+      g.drawImage(im,hx+r[0]*hw/32,hy+r[1]*hh/66,r[2]*hw/32,r[3]*hh/66);
+    });
+  },66);
+})();
 })();
 
 </script>
