@@ -4554,4 +4554,35 @@ renderInv=function(){ const before=JSON.stringify(ARMOR); _ri12b();
 document.addEventListener('pointercancel',()=>{ const g=document.getElementById('cpGhost'); if(g) g.remove(); },{passive:true});
 
 </script>
+<script>
+/* ==== CEPAS UI v13 — compact controls pass (small but tappable) ==== */
+(function(){
+const st13=document.createElement('style');
+st13.textContent=`
+#invTabs{flex:0 0 clamp(34px,8.5vh,50px) !important;}
+#invTabs button{font-size:clamp(7px,1.8vh,11px) !important;border-radius:5px;}
+#invTitle{top:.5% !important;height:7.5% !important;font-size:clamp(8px,2vh,13px) !important;}
+#invBody{top:9% !important;}
+#invClose{width:3% !important;font-size:clamp(7px,1.8vh,11px) !important;}
+#cpSearch{height:clamp(20px,4.2vh,30px) !important;font-size:8px !important;padding:4px 8px 4px 24px !important;}
+#cpFilters button{padding:3px 8px !important;font-size:clamp(6px,1.5vh,9px) !important;}
+#cpSort{padding:2px 8px !important;font-size:clamp(6px,1.5vh,9px) !important;}
+.craftRow{max-height:clamp(38px,8.5vh,54px) !important;}
+.craftRow img{width:26px !important;height:26px !important;}
+.craftRow b{font-size:8px !important;}
+.craftRow span{font-size:7px !important;}
+.btn.small,#cpTake,.cpChip{padding:3px 8px !important;font-size:clamp(6px,1.6vh,10px) !important;min-height:clamp(22px,4.6vh,30px);}
+.skRow{padding:2px 4px !important;margin-bottom:4px !important;}
+.skRow b{font-size:8px !important;}
+.skRow span{font-size:7px !important;}
+.skRow .pips{font-size:9px !important;}
+.skRow .btn.small{width:auto;padding:3px 8px !important;}
+#skPts{font-size:9px !important;margin-bottom:4px !important;}
+.aslot .t{font-size:clamp(5px,1.2vh,8px) !important;}
+.bslot .c{font-size:clamp(7px,1.6vh,11px) !important;}
+`;
+document.head.appendChild(st13);
+})();
+
+</script>
 </html>
