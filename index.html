@@ -4659,4 +4659,17 @@ if(filt&&so) filt.insertBefore(so,filt.firstChild);
 })();
 
 </script>
+<script>
+/* ==== CEPAS UI v16 — micro guards ==== */
+(function(){
+const st16=document.createElement('style');
+st16.textContent=`
+.craftRow .btn.small{flex:none !important;}
+.aslot .t{background:rgba(10,5,2,.65);padding:1px 3px;border-radius:3px;}
+#invTabs button.on{filter:none !important;}
+`;
+document.head.appendChild(st16);
+})();
+
+</script>
 </html>
