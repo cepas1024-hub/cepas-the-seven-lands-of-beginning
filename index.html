@@ -5473,4 +5473,27 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&stage.classList.co
 })();
 
 </script>
+<script>
+/* ==== CEPAS UI v22 — reliable fit-to-screen scaler (transform, no zoom) ==== */
+(function(){
+function fit22(){
+  const st=document.getElementById('stage'); if(!st) return;
+  const sc=Math.min(innerWidth/1600, innerHeight/900);
+  st.style.width='1600px'; st.style.height='900px';
+  st.style.zoom='1';
+  st.style.transform='scale('+sc+')';
+  st.style.transformOrigin='0 0';
+  st.style.position='fixed';
+  st.style.left=Math.max(0,(innerWidth-1600*sc)/2)+'px';
+  st.style.top=Math.max(0,(innerHeight-900*sc)/2)+'px';
+}
+window.fit22=fit22;
+addEventListener('resize',fit22);
+addEventListener('orientationchange',fit22);
+const _t22=toggleInv;
+toggleInv=function(f){ _t22(f); if(invOpen) setTimeout(fit22,0); };
+setTimeout(fit22,300);
+})();
+
+</script>
 </html>
