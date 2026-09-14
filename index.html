@@ -5441,4 +5441,36 @@ renderInv=function(){ _ri20();
 })();
 
 </script>
+<script>
+/* ==== CEPAS UI v21 — bulletproof open/close, opaque stage, dedupe HUD ==== */
+(function(){
+const st21=document.createElement('style');
+st21.textContent=`
+#stage.open{background:#070302 !important;}
+#pBag,#bagBtn{display:block !important;}
+#u2close{top:8px !important;left:50% !important;right:auto !important;transform:translateX(-50%);z-index:200 !important;min-width:46px;min-height:40px;font-size:16px;}
+`;
+document.head.appendChild(st21);
+const stage=document.getElementById('stage');
+const hub=document.getElementById('cpHub');
+function u2open(f){
+  const open=(typeof f==='boolean')?f:!invOpen;
+  invOpen=open;
+  document.getElementById('invWrap').classList.toggle('open',open);
+  stage.classList.toggle('open',open);
+  document.body.classList.toggle('u2open',open);
+  if(hub) hub.style.display=open?'none':'';
+  const pb=document.getElementById('pBag'); if(pb) pb.style.visibility=open?'hidden':'';
+  if(open){ try{ renderInv(); renderCraft(); renderSkills();
+    __u2renderInvGrid(); __u2EqRender(); __u2renderRecList(); __u2renderRecDetail(); }catch(_){} }
+}
+window.u2open=u2open;
+toggleInv=function(f){ u2open(f); };
+let xb=document.getElementById('u2close');
+if(!xb){ xb=document.createElement('button'); xb.id='u2close'; xb.textContent='X'; stage.appendChild(xb); }
+xb.onclick=()=>u2open(false);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&stage.classList.contains('open')) u2open(false); });
+})();
+
+</script>
 </html>
