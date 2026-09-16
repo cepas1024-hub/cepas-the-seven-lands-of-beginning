@@ -5377,7 +5377,7 @@ function renderSkillTabs(){$('skillTabs').innerHTML='';for(const c of CLASSES){c
 function renderTree(){const tr=$('tree');if(!tr)return;tr.innerHTML='';const L=$('treeLines');if(L)L.innerHTML='';const ns=SKILLS[S.selClass];const pos={};
  ns.forEach(n=>{const row=ns.filter(x=>x.tier===n.tier);const ri=row.indexOf(n);const xs=n.tier===0?[107]:[34,107,180];pos[n.id]={x:xs[ri],y:n.tier*62};});
  if(L){let svg='<svg width="262" height="176" style="position:absolute;inset:0">';ns.forEach(n=>{if(n.p&&pos[n.p]){svg+='<line x1="'+(pos[n.p].x+24)+'" y1="'+(pos[n.p].y+24)+'" x2="'+(pos[n.id].x+24)+'" y2="'+(pos[n.id].y+24)+'" stroke="#6b4a2a" stroke-width="3"/>';}});svg+='</svg>';L.innerHTML=svg;}
- const ic={Warrior:'sword',Assassin:'hand',Mage:'book',Support:'gear'}[S.selClass]||'gear';
+ const ic={Warrior:'hammer',Assassin:'lock',Mage:'book',Support:'chest'}[S.selClass]||'gear';
  ns.forEach(n=>{const lv=S.skills[n.id]||0;const locked=!!(n.p&&!(S.skills[n.p]>0));const d=document.createElement('div');
   d.className='tnode'+(lv>0?' on':'')+(locked?' locked':'')+(S.selSkill===n.id?' sel':'');
   d.style.left=pos[n.id].x+'px';d.style.top=pos[n.id].y+'px';
@@ -5386,7 +5386,7 @@ function renderTree(){const tr=$('tree');if(!tr)return;tr.innerHTML='';const L=$
   d.onclick=()=>{S.selSkill=n.id;sfx('click');renderTree();renderSkillDetail();};
   tr.appendChild(d);});}
 function renderSkillDetail(){const ns=SKILLS[S.selClass];const n=ns.find(x=>x.id===S.selSkill)||ns[0];S.selSkill=n.id;const lv=S.skills[n.id]||0;
- const ic={Warrior:'sword',Assassin:'hand',Mage:'book',Support:'gear'}[S.selClass]||'gear';
+ const ic={Warrior:'hammer',Assassin:'lock',Mage:'book',Support:'chest'}[S.selClass]||'gear';
  $('sdHead').innerHTML='<div class="ring">'+(ICONS[ic]||'')+'</div><div style="display:flex;flex-direction:column;gap:3px"><div class="gold-t" style="font-size:11px">'+n.name+'</div><div class="dim" style="font-size:8px">Lv '+lv+' / 5</div></div>';
  $('sdDesc').textContent=n.desc;$('sdNext').textContent='Next: '+n.next;
  const locked=!!(n.p&&!(S.skills[n.p]>0));const can=!locked&&lv<5&&S.points>0;
@@ -5404,6 +5404,7 @@ function openModal(kind){if(kind==='full'){toggleFull();return;}const M=$('mBody
  M.innerHTML='<div style="padding:16px;font-size:10px;line-height:1.7">'+h+'</div>';
  $('overlay').classList.add('open');
  const st=$('sndT');if(st)st.onclick=()=>{S.sound=!S.sound;st.textContent=S.sound?'ON':'OFF';save();};}
+window.__U2ICONS=ICONS;window.__U2QUESTS=QUESTS;window.__U2SFX=sfx;window.__U2TOAST=toast;
 
 /* ============ WIRING ============ */
 $('btnSort').onclick=()=>window.__u2Sort();
@@ -5558,6 +5559,38 @@ function fix23(){
 setTimeout(fix23,500); setTimeout(fix23,1500);
 const _t23=toggleInv;
 toggleInv=function(f){ _t23(f); setTimeout(fix23,0); };
+})();
+
+</script>
+<script>
+/* ==== CEPAS UI v24 — polish: icons, portrait, live quest completion ==== */
+(function(){
+function ico(k){ return ((window.__U2ICONS && __U2ICONS[k]) || '').replace('<svg ','<svg width="26" height="26" '); }
+function decor(){
+  const bm=document.getElementById('btnMenu'), bg=document.getElementById('btnGear'), p=document.getElementById('portrait');
+  if(bm && !bm.dataset.f24){ bm.style.position='relative'; bm.insertAdjacentHTML('afterbegin','<span style="display:flex;align-items:center;justify-content:center;pointer-events:none">'+ico('menu')+'</span>'); bm.dataset.f24='1'; }
+  if(bg && !bg.dataset.f24){ bg.style.position='relative'; bg.insertAdjacentHTML('afterbegin','<span style="display:flex;align-items:center;justify-content:center;pointer-events:none">'+ico('gear')+'</span>'); bg.dataset.f24='1'; }
+  if(p && window.U2){ const S2=U2.S(); const cls=S2?S2.selClass:'Warrior';
+    const k={Warrior:'hammer',Assassin:'lock',Mage:'book',Support:'chest'}[cls]||'gear';
+    if(p.dataset.cls!==cls){ p.dataset.cls=cls; p.style.position='relative'; p.innerHTML='<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+ico(k).replace('width="26" height="26"','width="34" height="34"')+'</div>'; } }
+}
+function questCheck(){
+  const S2=window.U2?U2.S():null; if(!S2||!window.__U2QUESTS) return; S2.qd=S2.qd||{};
+  __U2QUESTS.forEach(q=>{ if(S2.qd[q.id]) return; let pr=0; try{ pr=q.prog(S2); }catch(e){ return; }
+    if(pr>=q.target){ S2.qd[q.id]=1; let txt=''; try{ txt=q.reward(S2); }catch(e){}
+      try{ showToast('QUEST COMPLETE: '+q.name+'  ·  '+txt); }catch(e){}
+      try{ __U2SFX('lvl'); }catch(e){}
+      try{ U2.save(); }catch(e){}
+      try{ __U2TOAST(''); }catch(e){}
+    } });
+}
+window.__u2decor=decor; window.__u2questCheck=questCheck;
+const _c24=window.__u2doCraft;
+window.__u2doCraft=function(){ _c24(); questCheck(); };
+const _o24=toggleInv;
+toggleInv=function(f){ _o24(f); if(invOpen){ decor(); questCheck(); } };
+setTimeout(decor,800);
+setInterval(()=>{ if(window.invOpen){ decor(); questCheck(); } },4000);
 })();
 
 </script>
