@@ -3805,7 +3805,7 @@ document.addEventListener('pointerdown',e=>{
     clearTimeout(tipT); tipT=setTimeout(()=>tip.style.display='none',4000);
   } else tip.style.display='none';
 },true);
-if(typeof catOf!=="undefined")window.catOf=catOf;if(typeof ITEMS!=="undefined")window.ITEMS=ITEMS;if(typeof CP!=="undefined")window.CP=CP;if(typeof RECIPES!=="undefined")window.RECIPES=RECIPES;if(typeof countMat!=="undefined")window.countMat=countMat;if(typeof addItem!=="undefined")window.addItem=addItem;if(typeof itemIcon!=="undefined")window.itemIcon=itemIcon;if(typeof gainXP!=="undefined")window.gainXP=gainXP;if(typeof useMat!=="undefined")window.useMat=useMat;
+if(typeof catOf!=="undefined")window.catOf=catOf;if(typeof ITEMS!=="undefined")window.ITEMS=ITEMS;if(typeof CP!=="undefined")window.CP=CP;if(typeof RECIPES!=="undefined")window.RECIPES=RECIPES;if(typeof countMat!=="undefined")window.countMat=countMat;if(typeof addItem!=="undefined")window.addItem=addItem;if(typeof itemIcon!=="undefined")window.itemIcon=itemIcon;if(typeof gainXP!=="undefined")window.gainXP=gainXP;if(typeof useMat!=="undefined")window.useMat=useMat;if(typeof player!=="undefined")window.__PLAYER=player;if(typeof HERO!=="undefined"&&typeof camX!=="undefined"&&typeof camY!=="undefined")window.__HEROVIEW=function(){return{x:player.x-camX,y:player.y-camY};};
 })();
 aiLoad();
 resize();
@@ -5350,8 +5350,7 @@ function stats(){const b=bonuses();return{hp:S.base.hp+b.hp,mp:S.base.mp+b.mp,at
 function gainXP(n){S.xp+=n;while(S.xp>=100){S.xp-=100;S.level++;S.points+=5;S.base.hp+=50;S.base.mp+=20;S.base.atk+=3;S.base.def+=2;S.base.spd+=1;sfx('lvl');toast('LEVEL UP! Lv. '+S.level+'  (+5 stat points)');}}
 /* ============ RENDER ============ */
 function renderTop(){const st=stats();$('lvV').textContent=S.level;$('lvV2').textContent=S.level;
- $('hpTxt').textContent=fmt(st.hp)+' / '+fmt(st.hp);$('mpTxt').textContent=fmt(st.mp)+' / '+fmt(st.mp);
- $('hpFill').style.width='100%';$('mpFill').style.width='100%';
+ /* v26: live vitals own hp/mp bars now */
  $('xpFill').style.width=S.xp+'%';$('xpTxt').textContent=S.xp+'%';
  renderStats();kickCurrencies();}
 /* currency ticker */
@@ -5628,6 +5627,116 @@ setTimeout(fit25,400); setTimeout(fit25,1200);
 setTimeout(()=>{ const pop=document.getElementById('cpHubPop'); if(!pop) return;
   [...pop.querySelectorAll('button')].forEach(b=>{ if(b.textContent==='CRAFT'||b.textContent==='SKILLS') b.remove(); });
 },600);
+})();
+
+</script>
+<script>
+/* ==== CEPAS UI v26 — collisions, dedupe, LIVE vitals, real hero idle, portrait reflow ==== */
+(function(){
+/* ---------- CSS ---------- */
+const st26=document.createElement('style');
+st26.textContent=[
+/* plate: 4 thin live bars */
+'#plate{height:auto !important;min-height:96px}',
+'#plateTxt{flex:1;min-width:0}',
+'#plateTxt .p-bar{height:15px !important;margin-bottom:3px !important}',
+'#plateTxt .p-bar .txt{font-size:7px !important}',
+/* craft collisions */
+'#rdMatsTitle{flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:6px}',
+'#recList{width:210px !important}',
+'#recDetail{left:240px !important}',
+/* skill collisions */
+'#skillDetail{gap:5px;overflow-y:auto;overflow-x:hidden;padding-bottom:4px;scrollbar-width:thin}',
+'#sdDesc{font-size:8px;line-height:1.5}',
+'#sdBtns{display:flex;flex-direction:column;gap:5px;flex:0 0 auto;margin-top:4px}',
+'#sdBtns button{width:100%;margin:0 !important;position:static !important}',
+/* hero cam canvas */
+'#heroCv{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:132px;height:196px;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 0 6px rgba(0,0,0,.8))}',
+/* portrait reflow (real) */
+'body.u2never #stage{position:relative !important;z-index:40 !important;transform:none !important;zoom:1 !important;width:100% !important;height:auto !important;min-height:100vh;padding:8px !important;gap:10px;display:flex !important;flex-direction:column !important;overflow-y:auto !important;overflow-x:hidden !important;background:#070302 !important}',
+'body.u2never #plate,body.u2never #u2panel,body.u2never #charPanel,body.u2never #craftPanel,body.u2never #skillPanel{position:static !important;left:0 !important;top:0 !important;right:0 !important;width:100% !important;max-width:100% !important;height:auto !important;box-sizing:border-box}',
+'body.u2never #chips{position:static !important;order:-1;justify-content:flex-end}',
+'body.u2never #invBody{position:static !important;width:100% !important;height:auto !important;display:block !important}',
+'body.u2never #invGrid{max-height:420px}',
+'body.u2never #charPanel{display:block !important}',
+'body.u2never #scene{position:relative;height:240px;grid-column:auto}',
+'body.u2never #eqBody{position:static !important;display:grid !important;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 0}',
+'body.u2never #eqBody .eslot{position:static !important;margin:0 auto}',
+'body.u2never #tree{position:static !important;margin:10px auto;width:262px;height:190px}',
+'body.u2never #skillDetail{position:static !important}',
+'body.u2never #recList{position:static !important;width:auto !important;max-height:220px}',
+'body.u2never #recDetail{position:static !important;left:0 !important}',
+'body.u2never #craftTabs,body.u2never #skillTabs{position:static !important;left:0 !important;top:0 !important;right:0 !important;flex-wrap:wrap;margin:6px 10px}',
+'body.u2never #u2tabs{flex-wrap:wrap}',
+'body.u2never #statsBox,body.u2never #bonusBox{position:static !important;width:auto !important;margin:8px 12px}',
+'body.u2never #u2close{position:fixed !important;top:6px !important;left:50% !important;transform:translateX(-50%);z-index:99999}'
+].join('\n');
+document.head.appendChild(st26);
+const st26b=document.createElement('style');
+st26b.textContent='body.u2never #tree{height:auto !important;width:auto !important;text-align:center} body.u2never #tree .tnode{position:relative !important;display:inline-flex;margin:6px;vertical-align:top;width:48px;height:48px} body.u2never #treeLines{display:none !important} #heroCv{border:3px solid #6b4423;outline:2px solid #c9a35f;background:rgba(0,0,0,.35)}';
+document.head.appendChild(st26b);
+/* ---------- dedupe hub fully (bag icon stays as the only opener) ---------- */
+setTimeout(()=>{ const pop=document.getElementById('cpHubPop'); if(!pop) return;
+  [...pop.querySelectorAll('button')].forEach(b=>{ const t=b.textContent.trim(); if(t==='CRAFT'||t==='SKILLS'||t==='BAG / CHAR') b.remove(); });
+},700);
+/* ---------- LIVE vitals ---------- */
+function ld(k,d){ try{ const v=parseFloat(localStorage.getItem('cepas26_'+k)); return isNaN(v)?d:v; }catch(e){ return d; } }
+function sv(k,v){ try{ localStorage.setItem('cepas26_'+k,String(v)); }catch(e){} }
+let HP25=ld('hp',100), STA25=ld('sta',100), THI25=ld('thi',100);
+/* rebuild plate bars: HP / STA / HUN / THI */
+function barRow(id,cls){ const d=document.createElement('div'); d.className='p-bar'; d.style.height='15px'; d.style.marginBottom='3px';
+  d.innerHTML='<div class="fill'+(cls?' '+cls:'')+'" id="'+id+'F" style="width:100%"></div><div class="txt" id="'+id+'T"></div>'; return d; }
+setTimeout(()=>{ const pt=document.getElementById('plateTxt'); if(!pt||document.getElementById('staF')) return;
+  const hp=pt.querySelector('#hpFill').parentElement, mp=pt.querySelector('#mpFill').parentElement;
+  hp.style.height='15px'; hp.style.marginBottom='3px'; mp.style.height='15px'; mp.style.marginBottom='0px';
+  const sta=barRow('sta','sta26'), hun=barRow('hun','hun26'), thi=barRow('thi','thi26');
+  mp.parentElement.insertBefore(sta, mp);      // HP, STA, MP->THI later
+  mp.parentElement.appendChild(hun);
+  /* repurpose blue bar as THIRST */
+  mp.id='thiF'; mp.querySelector('.txt').id='thiT';
+  const stx=document.createElement('style'); stx.textContent='.sta26{background:linear-gradient(#b8f04a,#3fae2a 60%,#1e7a12) !important}.hun26{background:linear-gradient(#ffd07a,#ff9a2e 45%,#c96a10) !important}.thi26,#thiF{background:linear-gradient(#7ad7ff,#2f9fe0 55%,#1668a8) !important}'; document.head.appendChild(stx);
+  mp.classList.add('thi26');
+},900);
+function vitTick(){
+  const P=window.__PLAYER||null;
+  /* thirst decays; stamina drains when running */
+  THI25=Math.max(0,THI25-0.22);
+  if(P&&P.moving&&P.running) STA25=Math.max(0,STA25-1.4); else STA25=Math.min(100,STA25+1.6);
+  const hun=(typeof FOOD8!=='undefined')?FOOD8:100;
+  if(hun<5||THI25<5) HP25=Math.max(0,HP25-0.8); else if(hun>60&&THI25>60) HP25=Math.min(100,HP25+0.5);
+  sv('hp',HP25); sv('sta',STA25); sv('thi',THI25);
+  const set=(f,t,v,label)=>{ const F=document.getElementById(f),T=document.getElementById(t); if(F)F.style.width=Math.max(0,Math.min(100,v))+'%'; if(T)T.textContent=label+' '+Math.round(v)+' / 100'; };
+  set('hpFill','hpTxt',HP25,'HP');
+  set('staF','staT',STA25,'STA');
+  set('hunF','hunT',hun,'HUN');
+  set('thiF','thiT',THI25,'THI');
+}
+setInterval(vitTick,1000); setTimeout(vitTick,1200);
+window.__VITALS26=()=>({hp:HP25,sta:STA25,thi:THI25});
+/* drink restores thirst; food also tops hunger via engine */
+const _um26=window.useMat;
+if(_um26){ window.useMat=function(id,n){ const r=_um26(id,n); try{ const c=window.catOf?catOf(id):''; if(c==='DRINKS'){ THI25=Math.min(100,THI25+25); } else if(c==='FOOD'){ /* engine eat path adds FOOD8 already */ } }catch(e){} return r; }; }
+/* ---------- REAL hero idle cam ---------- */
+setTimeout(()=>{ const sc=document.getElementById('scene'); if(sc&&!document.getElementById('heroCv')){ const cv=document.createElement('canvas'); cv.id='heroCv'; cv.width=132; cv.height=196; sc.appendChild(cv); } },1000);
+function heroLoop(){
+  const cv=document.getElementById('heroCv');
+  if(cv && document.getElementById('stage').classList.contains('open') && window.__HEROVIEW){
+    const g=document.getElementById('game');
+    if(g && g.width>0){ const v=__HEROVIEW(); const k=g.width/(g.clientWidth||g.width);
+      const sw=44*k, sh=80*k, sx=(v.x-22)*k, sy=(v.y-72)*k;
+      const cx=cv.getContext('2d'); cx.imageSmoothingEnabled=false; cx.clearRect(0,0,cv.width,cv.height);
+      try{ cx.drawImage(g, Math.max(0,sx), Math.max(0,sy), sw, sh, 0, 0, cv.width, cv.height); }catch(e){}
+    } }
+  requestAnimationFrame(heroLoop);
+}
+function ensureLearn(){ const sd=document.getElementById('skillDetail'); if(!sd) return;
+  let b=document.getElementById('sdLearn');
+  if(!b){ b=document.createElement('button'); b.id='sdLearn'; b.className='p-btn'; b.textContent='LEARN / UPGRADE SKILL';
+    const rs=document.getElementById('btnRespec'); if(rs&&rs.parentNode) rs.parentNode.insertBefore(b,rs); else sd.appendChild(b);
+    b.onclick=()=>{ try{ if(window.doUpgrade) doUpgrade(); }catch(e){} setTimeout(ensureLearn,60); }; } }
+window.__u2ensureLearn=ensureLearn;
+setInterval(ensureLearn,1500); setTimeout(ensureLearn,1000);
+requestAnimationFrame(heroLoop);
 })();
 
 </script>
