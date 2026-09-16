@@ -5391,9 +5391,6 @@ function renderSkillDetail(){const ns=SKILLS[S.selClass];const n=ns.find(x=>x.id
  $('sdDesc').textContent=n.desc;$('sdNext').textContent='Next: '+n.next;
  const locked=!!(n.p&&!(S.skills[n.p]>0));const can=!locked&&lv<5&&S.points>0;
  $('sdCost').innerHTML=locked?'<span class="red-t">Requires previous skill</span>':(lv>=5?'<span class="gold-t">MAX LEVEL</span>':'Cost: <span class="gold-t">1 point</span> · you have '+S.points);
- let btn=$('sdLearn');if(!btn){btn=document.createElement('button');btn.id='sdLearn';btn.className='p-btn';const rs=$('btnRespec');if(rs&&rs.parentNode)rs.parentNode.insertBefore(btn,rs);else $('skillDetail').appendChild(btn);}
- btn.textContent=lv>0?'UPGRADE SKILL':'LEARN SKILL';btn.disabled=!can;btn.style.opacity=can?'1':'.45';
- btn.onclick=()=>{if(!can){sfx('err');return;}S.points--;S.skills[n.id]=lv+1;S.upgrades=(S.upgrades||0)+1;sfx('up');toast(n.name+' → Lv '+(lv+1));renderTree();renderSkillDetail();renderTop();save();};
  renderStats();}
 function openModal(kind){if(kind==='full'){toggleFull();return;}const M=$('mBody');if(!M)return;
  let h='';
@@ -5404,7 +5401,7 @@ function openModal(kind){if(kind==='full'){toggleFull();return;}const M=$('mBody
  M.innerHTML='<div style="padding:16px;font-size:10px;line-height:1.7">'+h+'</div>';
  $('overlay').classList.add('open');
  const st=$('sndT');if(st)st.onclick=()=>{S.sound=!S.sound;st.textContent=S.sound?'ON':'OFF';save();};}
-window.__U2ICONS=ICONS;window.__U2QUESTS=QUESTS;window.__U2SFX=sfx;window.__U2TOAST=toast;
+window.__U2ICONS=ICONS;window.__U2QUESTS=QUESTS;window.__U2SFX=sfx;window.__U2TOAST=toast;window.__U2SKILLS=SKILLS;window.__U2RENDER=function(){renderSkillTabs();renderTree();renderSkillDetail();renderTop();};
 
 /* ============ WIRING ============ */
 $('btnSort').onclick=()=>window.__u2Sort();
@@ -5533,7 +5530,7 @@ window.fit22=fit22;
 addEventListener('resize',fit22);
 addEventListener('orientationchange',fit22);
 const _t22=toggleInv;
-toggleInv=function(f){ _t22(f); if(invOpen) setTimeout(fit22,0); };
+toggleInv=function(f){ _t22(f); if(invOpen) setTimeout(()=>{(window.fit25||fit22)();},0); };
 setTimeout(fit22,300);
 })();
 
@@ -5554,7 +5551,7 @@ function fix23(){
   const x=document.getElementById('u2close');
   if(x && x.parentNode!==document.body){ document.body.appendChild(x); }
   if(x){ x.style.position='fixed'; x.style.top='6px'; x.style.left='50%'; x.style.right='auto'; x.style.transform='translateX(-50%)'; x.style.zIndex='99999'; }
-  if(window.fit22) fit22();
+  if(window.fit25) fit25(); else if(window.fit22) fit22();
 }
 setTimeout(fix23,500); setTimeout(fix23,1500);
 const _t23=toggleInv;
@@ -5591,6 +5588,46 @@ const _o24=toggleInv;
 toggleInv=function(f){ _o24(f); if(invOpen){ decor(); questCheck(); } };
 setTimeout(decor,800);
 setInterval(()=>{ if(window.invOpen){ decor(); questCheck(); } },4000);
+})();
+
+</script>
+<script>
+/* ==== CEPAS UI v25 — stretch-to-screen, portrait reflow, dedupe, collision fixes ==== */
+(function(){
+const st25=document.createElement('style');
+st25.textContent='body:not(.u2open) #u2close{display:none !important;} #invGrid{max-height:600px;overflow-y:auto;} #rdMatsTitle{display:flex;justify-content:space-between;align-items:baseline;gap:8px;} #rdMatsTitle span{float:none !important;} body.u2never #stage{overflow-x:hidden;} body.u2never #u2tabs,body.u2never .tabs{flex-wrap:wrap;} body.u2never #plate{flex-wrap:wrap;} body.u2never #plateTxt{min-width:0;} body.u2never .p-panel{max-width:100%;}';
+document.head.appendChild(st25);
+window.doUpgrade=function(){ try{
+  const S2=window.U2?U2.S():null; if(!S2||!window.__U2SKILLS){ showToast('Not available.'); return; }
+  const ns=__U2SKILLS[S2.selClass]; const n=ns.find(x=>x.id===S2.selSkill)||ns[0]; const lv=S2.skills[n.id]||0;
+  if(n.p&&!(S2.skills[n.p]>0)){ showToast('Requires the previous skill first.'); return; }
+  if(lv>=5){ showToast(n.name+' is already MAX level.'); return; }
+  if(S2.points<1){ showToast('No stat points - level up first!'); return; }
+  S2.points--; S2.skills[n.id]=lv+1; S2.upgrades=(S2.upgrades||0)+1;
+  try{ __U2SFX('up'); }catch(e){} try{ __U2TOAST(n.name+' upgraded to Lv '+(lv+1)); }catch(e){}
+  try{ U2.save(); }catch(e){} try{ if(window.__U2RENDER) __U2RENDER(); }catch(e){}
+  try{ if(window.__u2questCheck) __u2questCheck(); }catch(e){}
+ }catch(e){ showToast('Upgrade unavailable.'); } };
+/* stretch to ANY screen: anamorphic fill landscape, scrollable reflow portrait */
+function fit25(){ const st=document.getElementById('stage'); if(!st) return;
+  if(innerHeight>innerWidth){ document.body.classList.add('u2never');
+    ['width','height','zoom','transform','left','top','position'].forEach(k=>{ st.style[k]=''; });
+  } else { document.body.classList.remove('u2never');
+    const sx=innerWidth/1600, sy=innerHeight/900;
+    st.style.width='1600px'; st.style.height='900px'; st.style.zoom='1';
+    st.style.transform='scale('+sx+','+sy+')'; st.style.transformOrigin='0 0';
+    st.style.position='fixed'; st.style.left='0px'; st.style.top='0px';
+  } }
+window.fit25=fit25;
+addEventListener('resize',fit25);
+addEventListener('orientationchange',fit25);
+const _t25=toggleInv;
+toggleInv=function(f){ _t25(f); setTimeout(fit25,0); };
+setTimeout(fit25,400); setTimeout(fit25,1200);
+/* dedupe hub: BAG/CHAR, CRAFT, SKILLS all opened the same UI -> keep one */
+setTimeout(()=>{ const pop=document.getElementById('cpHubPop'); if(!pop) return;
+  [...pop.querySelectorAll('button')].forEach(b=>{ if(b.textContent==='CRAFT'||b.textContent==='SKILLS') b.remove(); });
+},600);
 })();
 
 </script>
