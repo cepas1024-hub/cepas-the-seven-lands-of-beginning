@@ -5840,4 +5840,73 @@ window.__CBDBG=()=>({en:EN.length,dead:dead});
 })();
 
 </script>
+<script>
+/* ==== CEPAS UI v28 — live world bars, touch tooltips, SHOP, tutorial ==== */
+(function(){
+/* 1) drive world HUD fills from live vitals */
+setInterval(()=>{ try{
+  const v=window.__VITALS26?__VITALS26():null; if(!v) return;
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el&&el.firstElementChild) el.firstElementChild.style.width=Math.max(0,Math.min(100,val))+'%'; };
+  set('fillH',v.hp); set('fillS',v.sta); set('fillTst',v.thi);
+  if(typeof FOOD8!=='undefined') set('fillHng',FOOD8);
+}catch(e){} },800);
+/* 2) long-press tooltips for touch */
+const tipEl=document.getElementById('tip');
+let ttTimer=null;
+document.addEventListener('touchstart',e=>{ const el=e.target.closest('[data-tip]'); if(!el||!tipEl) return;
+  const t=e.touches[0];
+  ttTimer=setTimeout(()=>{ tipEl.innerHTML=el.getAttribute('data-tip'); tipEl.style.display='block';
+    tipEl.style.left=Math.min(innerWidth-260,t.clientX+12)+'px'; tipEl.style.top=Math.max(8,t.clientY-70)+'px'; },350);
+},{passive:true});
+['touchend','touchmove','touchcancel'].forEach(ev=>document.addEventListener(ev,()=>{ clearTimeout(ttTimer); if(tipEl) tipEl.style.display='none'; },{passive:true}));
+/* overlay must work outside the stage (world state) */
+setTimeout(()=>{ const ov=document.getElementById('overlay'); if(ov&&ov.parentNode!==document.body){ document.body.appendChild(ov); ov.style.position='fixed'; ov.style.inset='0'; ov.style.zIndex='65'; } },600);
+/* 3) SHOP */
+const SHOP=[ ['bread_loaf',40],['water_jug',30],['torch',25],['bandage',45],['wood',12],['stone',12],['iron_ingot',60],['rope',28] ];
+function openShop(){ const M=document.getElementById('mBody'); if(!M) return;
+  const s2=window.U2?U2.S():null;
+  let h='<h3>TRADING POST</h3><p class="dim">Gold: <span class="gold-t">'+(s2?fmtGold(s2.gold):'')+'</span></p>';
+  const AVAIL=SHOP.filter(r=>ITEMS[r[0]]);
+  h+=AVAIL.map((row,i)=>'<p style="display:flex;align-items:center;gap:8px"><img src="'+icn(row[0])+'" style="width:26px;height:26px;image-rendering:pixelated"><span style="flex:1">'+ITEMS[row[0]].name+'</span><span class="gold-t">'+row[1]+'g</span><button class="p-btn" data-buy="'+i+'">BUY</button></p>').join('');
+  M.innerHTML='<div style="padding:16px;font-size:10px;line-height:1.9">'+h+'</div>';
+  document.getElementById('overlay').classList.add('open');
+  M.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{ const row=AVAIL[+b.dataset.buy]; const s3=window.U2?U2.S():null;
+    if(!s3){ return; } if(s3.gold<row[1]){ try{__U2SFX('err');}catch(e){} try{showToast('Not enough gold!');}catch(e){} return; }
+    s3.gold-=row[1]; try{ addItem(row[0],1); }catch(e){}
+    try{ __U2SFX('coin'); }catch(e){} try{ showToast('Bought '+ITEMS[row[0]].name+' for '+row[1]+'g'); }catch(e){}
+    try{ U2.save(); if(window.__U2RENDER) __U2RENDER(); }catch(e){}
+    openShop(); });
+}
+function icn(id){ try{ const u=itemIcon(id); if(u) return u; }catch(e){} return 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='; }
+function fmtGold(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+window.__u2shop=openShop;
+setTimeout(()=>{ const chips=document.getElementById('chips'); if(chips&&!document.getElementById('shopBtn')){
+  const b=document.createElement('button'); b.id='shopBtn'; b.className='iconbtn';
+  b.innerHTML='<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">'+((window.__U2ICONS&&__U2ICONS.chest)||'')+'</span>';
+  b.style.position='relative'; b.setAttribute('data-tip','<span class=tt>Trading Post</span><br><span class=dim>Spend gold on supplies</span>');
+  b.onclick=()=>openShop(); chips.appendChild(b); } },1000);
+/* 4) first-run tutorial */
+try{
+  if(!localStorage.getItem('cepas28_tut')){
+    const PAGES=[
+      ['WELCOME TO CEPAS','You wake in the Seven Lands. Move with the wooden pad (or WASD / arrows). Everything you see is yours to build.'],
+      ['YOUR BAG','Tap the bag icon to open your interface: real inventory, crafting, skill tree, quests. Tap armor to equip it, tap food to eat it.'],
+      ['SURVIVE','Watch HP / STA / HUN / THI at the top. Hunger and thirst fall over time - eat bread, drink water, or your health drains.'],
+      ['FIGHT','Slimes, boars and bats roam the wilds. Tap the round attack button (or Space) to strike. Kills drop gold and materials. At 0 HP you can respawn.'],
+      ['CRAFT & GROW','Gather wood and stone, then craft torches, armor and tools at the CRAFTING panel. Spend stat points in the SKILL TREE. Good luck!']];
+    const ov=document.createElement('div'); ov.id='tutOv';
+    ov.style.cssText='position:fixed;inset:0;z-index:70;background:rgba(5,2,0,.8);display:flex;align-items:center;justify-content:center;';
+    ov.innerHTML='<div style="width:min(430px,88vw);border:6px solid #c9a35f;border-radius:10px;background:#1a0f08;padding:20px;font-family:monospace;color:#f0d9a8;box-shadow:0 0 0 3px #000,0 10px 40px #000"><div id="tutT" style="color:#ffe27a;font-size:15px;font-weight:bold;letter-spacing:2px;margin-bottom:10px"></div><div id="tutB" style="font-size:11px;line-height:1.8;margin-bottom:16px"></div><div style="display:flex;gap:10px;justify-content:flex-end"><button id="tutSkip" style="padding:8px 16px;font-family:monospace;background:#3a2410;color:#c9a376;border:2px solid #6b4423;border-radius:6px;cursor:pointer">SKIP</button><button id="tutNext" style="padding:8px 20px;font-family:monospace;font-weight:bold;background:linear-gradient(#8a6238,#4a2d15);color:#ffe9b0;border:2px solid #c9a35f;border-radius:6px;cursor:pointer">NEXT</button></div></div>';
+    document.body.appendChild(ov);
+    let pi=0;
+    const show=()=>{ ov.querySelector('#tutT').textContent=PAGES[pi][0]; ov.querySelector('#tutB').textContent=PAGES[pi][1]; ov.querySelector('#tutNext').textContent=pi===PAGES.length-1?'BEGIN!':'NEXT'; };
+    const done=()=>{ localStorage.setItem('cepas28_tut','1'); ov.remove(); };
+    ov.querySelector('#tutNext').onclick=()=>{ if(pi>=PAGES.length-1) done(); else { pi++; show(); } };
+    ov.querySelector('#tutSkip').onclick=done;
+    setTimeout(show,1500);
+  }
+}catch(e){}
+})();
+
+</script>
 </html>
